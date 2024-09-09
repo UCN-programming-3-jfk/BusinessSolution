@@ -6,7 +6,7 @@ namespace TestingDataAccess;
 /// may give errors, though the code is working fine.
 /// To reduce the likelyhood of this, add a developer specific string to test data,
 /// E.g.
-/// var newAccount = new Account() { Name = "[TESTDATA" + developerName + "] Test Account", Balance = 42 };
+/// var newAccount = new Account() { Name = $"[TESTDATA from {Environment.MachineName}] Test Account", Balance = 42 };
 /// so cleanup only deletes test data from this developer
 /// </summary>
 public class Tests
@@ -38,13 +38,13 @@ public class Tests
     /// <summary>
     /// This cleanup is performed at the end of all tests
     /// to remove all data marked [TESTDATA].
-    /// This is done, because a failed test 
-    /// may have exited before cleaning up after itself.
+    /// This is done, because a test may have exited 
+    /// before cleaning up after itself for one reason or another.
     /// </summary>
     [OneTimeTearDown]
     public void DeleteAllTestData()
     {
-        var testAccounts = _dataAccess.FindAccountsFromPartOfName("[TESTDATA]");
+        var testAccounts = _dataAccess.FindAccountsFromPartOfName("[TESTDATA");
         foreach (var account in testAccounts)
         {
             _dataAccess.Delete(account.Id);
@@ -90,19 +90,19 @@ public class Tests
     public void TestUpdateAccount()
     {
         // Insert account
-        var newAccount = new Account() { Name = "[TESTDATA] Test Account", Balance = 42 };
+        var newAccount = new Account() { Name = $"[TESTDATA] Test Account", Balance = 42 };
         _dataAccess.Insert(newAccount);
         _idsToCleanUp.Add(newAccount.Id);
 
         // Update account
-        newAccount.Name = "Updated Account";
+        newAccount.Name = "[TESTDATA] Updated Account";
         _dataAccess.Update(newAccount);
 
         // Retrieve updated account
         var updatedAccount = _dataAccess.Get(newAccount.Id);
 
         // Assert that the updated account matches the expected values
-        Assert.That(updatedAccount.Name, Is.EqualTo("Updated Account"), "Account Name should be updated.");
+        Assert.That(updatedAccount.Name, Is.EqualTo(newAccount.Name), "Account Name should be updated.");
     }
 
     [Test]
@@ -150,8 +150,8 @@ public class Tests
     public void TestFindAccounts()
     {
         // Arrange: Insert multiple accounts
-        var account1 = new Account() { Name = "FindMe Account 1", Balance = 100 };
-        var account2 = new Account() { Name = "FindMe Account 2", Balance = 100 };
+        var account1 = new Account() { Name = "[TESTDATA] FindMe Account 1", Balance = 100 };
+        var account2 = new Account() { Name = "[TESTDATA] FindMe Account 2", Balance = 100 };
         _dataAccess.Insert(account1);
         _dataAccess.Insert(account2);
         _idsToCleanUp.Add(account1.Id);

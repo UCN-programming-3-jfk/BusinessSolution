@@ -5,6 +5,7 @@ using BusinessSolution.DAL.Model;
 namespace BusinessSolution.DAL;
 public class AccountDAO : IAccountDAO
 {
+    #region SQL statements
     private readonly string _deleteSql = "DELETE FROM Account WHERE id = @accountId";
     private readonly string _selectSingleSql = "SELECT * FROM Account WHERE id = @accountId";
     private readonly string _selectAllSql = "SELECT * FROM Account";
@@ -14,13 +15,14 @@ public class AccountDAO : IAccountDAO
     private readonly string _updateDestinationAccountSql = "UPDATE Account SET Balance = Balance + @amount WHERE id=@id";
     private readonly string _findAccountsFromPartOfNameSql = "SELECT * FROM Account WHERE name LIKE @partOfName";
 
+    #endregion
     public string ConnectionString { get; set; }
-
     public AccountDAO(string connectionString)
     {
         ConnectionString = connectionString;
     }
 
+    #region Core DAO methods
     public bool Delete(int id)
     {
         using SqlConnection connection = new SqlConnection(ConnectionString);
@@ -30,7 +32,6 @@ public class AccountDAO : IAccountDAO
             SqlCommand command = new SqlCommand(_deleteSql, connection);
             command.Parameters.AddWithValue("@accountId", id);
             return command.ExecuteNonQuery() == 1;
-
         }
         catch (Exception ex)
         {
@@ -40,7 +41,6 @@ public class AccountDAO : IAccountDAO
 
     public Account Get(int accountId)
     {
-        
         using SqlConnection connection = new SqlConnection(ConnectionString);
         connection.Open();
 
@@ -52,7 +52,7 @@ public class AccountDAO : IAccountDAO
             SqlDataReader reader = command.ExecuteReader();
             if (reader.Read())
             {
-                return DataReaderRowToAccount(reader);
+                return SingleDataReaderRowToAccount(reader);
             }
             else
             {
@@ -69,7 +69,6 @@ public class AccountDAO : IAccountDAO
 
     public IEnumerable<Account> GetAll()
     {
-        
         using SqlConnection connection = new SqlConnection(ConnectionString);
         connection.Open();
 
@@ -90,7 +89,7 @@ public class AccountDAO : IAccountDAO
 
     public int Insert(Account account)
     {
-        
+
         using SqlConnection connection = new SqlConnection(ConnectionString);
         connection.Open();
 
@@ -112,7 +111,6 @@ public class AccountDAO : IAccountDAO
 
     public bool Update(Account account)
     {
-        
         using SqlConnection connection = new SqlConnection(ConnectionString);
         connection.Open();
 
@@ -129,13 +127,12 @@ public class AccountDAO : IAccountDAO
         {
             throw new Exception($"Exception while trying to update account. The exception was: '{ex.Message}'", ex);
         }
-    }
+    } 
+    #endregion
 
     #region Additional functionality
     public void TransferFunds(int sourceAccountId, int destinationAccountId, decimal amount)
     {
-       
-
         using SqlConnection connection = new SqlConnection(ConnectionString);
         connection.Open();
         SqlTransaction transaction = connection.BeginTransaction();
@@ -192,18 +189,18 @@ public class AccountDAO : IAccountDAO
 
     #endregion
 
-    #region Internal helper methods
+    #region Internal helper methods for converting DataReader tuples to objects
 
     private IEnumerable<Account> DataReaderToAccounts(SqlDataReader reader)
     {
         List<Account> accounts = new List<Account>();
         while (reader.Read())
         {
-            accounts.Add(DataReaderRowToAccount(reader));
+            accounts.Add(SingleDataReaderRowToAccount(reader));
         }
         return accounts;
     }
-    private Account DataReaderRowToAccount(SqlDataReader reader)
+    private Account SingleDataReaderRowToAccount(SqlDataReader reader)
     {
         Account account = new Account();
         account.Id = (int)reader["id"];
@@ -212,5 +209,4 @@ public class AccountDAO : IAccountDAO
         return account;
     }
     #endregion
-
 }
