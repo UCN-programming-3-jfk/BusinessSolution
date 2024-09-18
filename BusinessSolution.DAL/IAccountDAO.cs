@@ -31,7 +31,7 @@ public interface IAccountDAO
     /// </summary>
     /// <param name="id">The id of the account to find</param>
     /// <returns>The account, if it exists. Otherwise NULL</returns>
-    Account Get(int id);
+    Account? Get(int id);
 
     /// <summary>
     /// Updates an account

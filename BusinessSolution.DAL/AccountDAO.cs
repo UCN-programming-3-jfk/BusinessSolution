@@ -39,7 +39,7 @@ public class AccountDAO : IAccountDAO
         }
     }
 
-    public Account Get(int accountId)
+    public Account? Get(int accountId)
     {
         using SqlConnection connection = new SqlConnection(ConnectionString);
         connection.Open();
@@ -61,7 +61,7 @@ public class AccountDAO : IAccountDAO
         }
         catch (Exception ex)
         {
-            throw new Exception($"Exception while trying to find the account with the '{accountId}'. The exception was: '{ex.Message}'", ex);
+            throw new Exception($"Exception while trying to find account with id '{accountId}'. The exception was: '{ex.Message}'", ex);
         }
     }
 
